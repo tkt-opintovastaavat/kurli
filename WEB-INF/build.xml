@@ -1,0 +1,94 @@
+<project name="Tietokantasovellus" default="def" basedir=".">
+ 
+  <!--
+     Installation folder, Change USER to your account name
+      
+  -->
+<property environment="env"/>
+
+
+  <property name="home"  value="./"/>
+ 
+  <!-- Source folder -->
+  <property name="src" value="${home}/src"/>
+ 
+  <!-- folder to contain the compiled classes -->
+  <property name="classes"  value="${home}/classes"/>
+ 
+  <!-- Temporary folder, claaas-files are compiled here and then 
+   moved into their final destination ${classes} 
+  -->
+  <property name="build" value="${home}/build"/>
+  <!-- which tomcat is used -->
+  <property name="catalina.home" value="/usr/share/tomcat6/"/>
+
+  <!-- library folder external jar-files  -->
+  <property name="javalib" value="${home}/lib"/>
+ 
+<!--
+  Rather than relying on the CLASSPATH environment variable, Ant includes
+  features that makes it easy to dynamically construct the classpath you
+  need for each compilation.  The example below constructs the compile
+  classpath to include the servlet.jar file, as well as the other components
+  that Tomcat makes available to web applications automatically, plus anything
+  that you explicitly added.
+-->
+ 
+  <path id="compile.classpath">
+   <fileset dir="${javalib}">
+        <include name="*.jar"/>
+   </fileset>
+   
+ <!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
+    <!--
+    <pathelement location="${foo.jar}"/>
+    -->
+    <fileset dir="${catalina.home}/bin">
+      <include name="*.jar"/>
+    </fileset>
+    <pathelement location="${catalina.home}/lib"/>
+    <fileset dir="${catalina.home}/lib">
+      <include name="*.jar"/>
+    </fileset>
+<!--
+    
+    Include all elements that Tomcat exposes to applications
+    <pathelement location="/usr/share/java/"/>
+    <fileset dir="/usr/share/java/">
+      <include name="*.jar"/>
+    </fileset>
+-->
+  </path>
+
+<!-- Create the build-folder  -->
+  <target name="init">
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+ 
+<!-- Compile the java programs -->
+  <target name="compile" depends="init">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}">
+      <classpath refid="compile.classpath"/>
+    </javac>
+  </target>
+ 
+  <!-- Move class-files into their folder -->
+  <target name="movecl">
+    <move todir="${classes}" overwrite="true">
+      <fileset dir="${build}"/>
+    </move>
+  </target>
+ 
+  <!-- Delete the build-folder -->
+  <target name="clean">
+    <!-- Delete the ${build} directory trees -->
+    <delete dir="${build}"/>
+  </target>
+
+  <!-- Compile, move and clean -->
+  <target name="def" depends="compile,movecl,clean"/>
+</project>
+ 
+
