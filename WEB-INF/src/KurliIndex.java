@@ -4,7 +4,7 @@ import java.text.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-public class KurliIndex extends HttpServlet { 
+public class KurliIndex extends HttpServlet {
 
     final String dbDriver="oracle.jdbc.OracleDriver";
 
@@ -13,23 +13,22 @@ public class KurliIndex extends HttpServlet {
     // nothing to replace here
 
     final String dbUser= "tikas";     // replace with your db user account
-    final String dbPassword ="tikas";     // replace with your password 
+    final String dbPassword ="tikas";     // replace with your password
     // A better solution would be to
-    // give these as configuration 
+    // give these as configuration
     // parameters
 
     public void doGet(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException {
-   
+
         res.setContentType("application/json");
-        ServletOutputStream out= res.getOutputStream();        
+        ServletOutputStream out= res.getOutputStream();
         out.println("{foo: 'bar'}");
-       
-    } 
+
+    }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException {
     }
 
 }
-    
