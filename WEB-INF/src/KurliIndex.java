@@ -3,6 +3,8 @@ import java.sql.*;
 import java.text.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class KurliIndex extends HttpServlet {
 
@@ -22,8 +24,8 @@ public class KurliIndex extends HttpServlet {
     }
 
     private void displayData(ServletOutputStream out) throws IOException {
-        out.println("[");
-        Connection con=null;
+      ArrayList<String> results = new ArrayList<String>();
+      Connection con=null;
         con = createDbConnection(dbDriver,dbServer,dbUser,dbPassword,out);
         if (con == null)
             return;
@@ -31,19 +33,38 @@ public class KurliIndex extends HttpServlet {
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM opintojakso WHERE tyyppi = 'K' AND opintopisteet != 0");
             while(rs.next()) {
-                out.print("{");
-                out.print("code: '" +rs.getString("kurssikoodi") + "',");
-                out.print("name: {");
-                out.print("fi: '" +rs.getString("nimi_suomi") + "',");
-                out.print("en: '" +rs.getString("nimi_englanti") + "',");
-                out.print("se: '" +rs.getString("nimi_ruotsi") + "',");
-                out.print("},");
-                out.print("credits: '" + rs.getString("opintopisteet") + "',");
-                out.print("level: '" + rs.getString("taso") + "'");
-                out.println("},");
+                results.add(fetchCourseData(rs));
             }
         } catch (SQLException e) {}
+        printResults(out, results);
+    }
+
+    private void printResults(ServletOutputStream out, ArrayList<String> results) throws IOException {
+        out.println("[");
+        Iterator iter = results.iterator();
+        if (iter.hasNext()) {
+            out.print((String) iter.next());
+            while(iter.hasNext()) {
+                out.println(",");
+                out.print((String) iter.next());
+            }
+        }
         out.println("]");
+    }
+
+    private String fetchCourseData(ResultSet rs) throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"code\": \"" +rs.getString("kurssikoodi") + "\",");
+        sb.append("\"name\": {");
+        sb.append("\"fi\": \"" +rs.getString("nimi_suomi") + "\",");
+        sb.append("\"en\": \"" +rs.getString("nimi_englanti") + "\",");
+        sb.append("se: \"" +rs.getString("nimi_ruotsi") + "\"");
+        sb.append("},");
+        sb.append("credits: \"" + rs.getString("opintopisteet") + "\",");
+        sb.append("level: \"" + rs.getString("taso") + "\"");
+        sb.append("},");
+        return sb.toString();
     }
 
     private Connection createDbConnection(String dbDriver, String dbServer, String dbUser, String dbPassword, ServletOutputStream out) throws IOException {
