@@ -15,15 +15,16 @@ public class KurliIndex extends HttpServlet {
 
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         res.setContentType("application/json");
-        displayData(res.getOutputStream());
-
+        res.setCharacterEncoding("UTF-8");
+        PrintWriter out = res.getWriter();
+        displayData(out);
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException {
     }
 
-    private void displayData(ServletOutputStream out) throws IOException {
+    private void displayData(PrintWriter out) throws IOException {
       ArrayList<String> results = new ArrayList<String>();
       Connection con=null;
         con = createDbConnection(dbDriver,dbServer,dbUser,dbPassword,out);
@@ -39,7 +40,7 @@ public class KurliIndex extends HttpServlet {
         printResults(out, results);
     }
 
-    private void printResults(ServletOutputStream out, ArrayList<String> results) throws IOException {
+    private void printResults(PrintWriter out, ArrayList<String> results) throws IOException {
         out.println("[");
         Iterator iter = results.iterator();
         if (iter.hasNext()) {
@@ -55,19 +56,23 @@ public class KurliIndex extends HttpServlet {
     private String fetchCourseData(ResultSet rs) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-        sb.append("\"code\": \"" +rs.getString("kurssikoodi") + "\",");
+        sb.append("\"code\": \"" + sanitize(rs.getString("kurssikoodi")) + "\",");
         sb.append("\"name\": {");
-        sb.append("\"fi\": \"" +rs.getString("nimi_suomi") + "\",");
-        sb.append("\"en\": \"" +rs.getString("nimi_englanti") + "\",");
-        sb.append("se: \"" +rs.getString("nimi_ruotsi") + "\"");
+        sb.append("\"fi\": \"" + sanitize(rs.getString("nimi_suomi")) + "\",");
+        sb.append("\"en\": \"" + sanitize(rs.getString("nimi_englanti")) + "\",");
+        sb.append("\"se\": \"" + sanitize(rs.getString("nimi_ruotsi")) + "\"");
         sb.append("},");
-        sb.append("credits: \"" + rs.getString("opintopisteet") + "\",");
-        sb.append("level: \"" + rs.getString("taso") + "\"");
-        sb.append("},");
+        sb.append("\"credits\": \"" + sanitize(rs.getString("opintopisteet")) + "\",");
+        sb.append("\"level\": \"" + sanitize(rs.getString("taso")) + "\"");
+        sb.append("}");
         return sb.toString();
     }
 
-    private Connection createDbConnection(String dbDriver, String dbServer, String dbUser, String dbPassword, ServletOutputStream out) throws IOException {
+    private String sanitize(String unsafe) {
+        return unsafe.replaceAll("[\\n\\r]", "");
+    }
+
+    private Connection createDbConnection(String dbDriver, String dbServer, String dbUser, String dbPassword, PrintWriter out) throws IOException {
 
         // establish a database connection
         try{
